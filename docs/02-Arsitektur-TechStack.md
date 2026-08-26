@@ -1,4 +1,5 @@
 # Arsitektur & Tech Stack — KosConnect
+
 **Versi:** 0.1 · **Tanggal:** 2026-08-25 · **Prasyarat:** PRD v0.1 disetujui
 **Kendala desain:** solo founder, budget minim (awal ≈ Rp0/bln + domain), harus siap scale tanpa rombak besar.
 
@@ -57,6 +58,7 @@ apps/web/
 ```
 
 ### Fase ekspansi (traffic naik) — TANPA rombak kode:
+
 ```
  Cloudflare ──► Load Balancer ──► App instance #1
                               ├─► App instance #2   (stateless: tinggal gandakan)
@@ -69,20 +71,20 @@ apps/web/
 
 ## 3. Tech Stack
 
-| Layer | Pilihan | Alasan | Biaya awal |
-|---|---|---|---|
-| Bahasa | TypeScript | Satu bahasa front+back, aman dari bug tipe | Rp0 |
-| Framework | Next.js (App Router) | SSR untuk SEO (penting! halaman kos harus ter-index Google), API route built-in, deploy mudah | Rp0 |
-| UI | Tailwind CSS + shadcn/ui | Cepat styling responsive, komponen siap pakai | Rp0 |
-| Database | PostgreSQL via **Supabase** | Free tier murah hati, managed backup, Auth included, row-level security | Rp0 |
-| Auth | **Supabase Auth** (+ Google OAuth) | Email/password + OAuth gratis; OTP WA via provider SMS murah (atau ditunda ke fase 2) | Rp0 |
-| Cache | **Upstash Redis** | Serverless, free tier cukup | Rp0 |
-| Storage foto | **Cloudflare R2** | Gratis egress — foto banyak pun bandwidth tidak membakar biaya | Rp0 |
-| Hosting | **Vercel** (alternatif: Railway/Fly.io) | Deploy otomatis dari GitHub, HTTPS, scaling dasar | Rp0 |
-| Peta | Leaflet + OpenStreetMap | Gratis 100%, embed pin lokasi kos | Rp0 |
-| Email | Resend atau Brevo | Free ~3rb email/bln | Rp0 |
-| Domain | .id / .com | Wajib | ±Rp150–200rb/thn |
-| Monitoring | Sentry (free tier) + UptimeRobot | Tahu error & downtime sebelum user komplain | Rp0 |
+| Layer        | Pilihan                                 | Alasan                                                                                        | Biaya awal       |
+| ------------ | --------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------- |
+| Bahasa       | TypeScript                              | Satu bahasa front+back, aman dari bug tipe                                                    | Rp0              |
+| Framework    | Next.js (App Router)                    | SSR untuk SEO (penting! halaman kos harus ter-index Google), API route built-in, deploy mudah | Rp0              |
+| UI           | Tailwind CSS + shadcn/ui                | Cepat styling responsive, komponen siap pakai                                                 | Rp0              |
+| Database     | PostgreSQL via **Supabase**             | Free tier murah hati, managed backup, Auth included, row-level security                       | Rp0              |
+| Auth         | **Supabase Auth** (+ Google OAuth)      | Email/password + OAuth gratis; OTP WA via provider SMS murah (atau ditunda ke fase 2)         | Rp0              |
+| Cache        | **Upstash Redis**                       | Serverless, free tier cukup                                                                   | Rp0              |
+| Storage foto | **Cloudflare R2**                       | Gratis egress — foto banyak pun bandwidth tidak membakar biaya                                | Rp0              |
+| Hosting      | **Vercel** (alternatif: Railway/Fly.io) | Deploy otomatis dari GitHub, HTTPS, scaling dasar                                             | Rp0              |
+| Peta         | Leaflet + OpenStreetMap                 | Gratis 100%, embed pin lokasi kos                                                             | Rp0              |
+| Email        | Resend atau Brevo                       | Free ~3rb email/bln                                                                           | Rp0              |
+| Domain       | .id / .com                              | Wajib                                                                                         | ±Rp150–200rb/thn |
+| Monitoring   | Sentry (free tier) + UptimeRobot        | Tahu error & downtime sebelum user komplain                                                   | Rp0              |
 
 **Catatan SEO:** karena ini marketplace, calon user datang lewat Google ("kos murah dekat UGM" dst.) → Next.js SSR + sitemap + structured data (schema.org `Accommodation`) adalah keputusan arsitektur, bukan fitur bonus.
 
@@ -106,19 +108,19 @@ Skenario yang kamu khawatirkan: ribuan user bersamaan membuka fitur yang sama. P
 
 ## 5. Rencana Keamanan
 
-| Ancaman | Pertahanan |
-|---|---|
-| SQL injection | ORM/query builder parameterized (Drizzle/Prisma) — jangan raw query string |
-| XSS | React escaping default + sanitasi input rich-text (deskripsi kos) |
-| CSRF | SameSite cookies + token pada mutasi |
-| Brute force login | Rate limit per IP+email, lockout progresif |
-| Akun take-over | Password hashing bcrypt/argon2 (bawaan Supabase Auth), verifikasi email wajib, OTP WA penyedia *(ditunda fase awal — lihat §7)* |
-| Spam listing/review bot | Verifikasi listing oleh admin sebelum tayang, review wajib bukti + validasi admin (PRD §7), rate limit, deteksi duplikat koordinat |
-| DDoS | Cloudflare proxy + rate limit edge (free tier sudah termasuk) |
-| Kebocoran data | Row-Level Security Postgres (user hanya bisa edit miliknya), secrets di environment variables, backup DB harian otomatis (Supabase), least-privilege API keys |
-| Upload file berbahaya | Validasi tipe & ukuran gambar, re-generate gambar saat proses, nama file acak |
-| Penipuan transfer luar platform | Disclaimer edukasi di UI, badge "Nomor WA terverifikasi", laporan abuse → moderasi admin |
-| Admin panel | Role-based access control ketat (staff ≠ superadmin), audit log aksi admin |
+| Ancaman                         | Pertahanan                                                                                                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SQL injection                   | ORM/query builder parameterized (Drizzle/Prisma) — jangan raw query string                                                                                    |
+| XSS                             | React escaping default + sanitasi input rich-text (deskripsi kos)                                                                                             |
+| CSRF                            | SameSite cookies + token pada mutasi                                                                                                                          |
+| Brute force login               | Rate limit per IP+email, lockout progresif                                                                                                                    |
+| Akun take-over                  | Password hashing bcrypt/argon2 (bawaan Supabase Auth), verifikasi email wajib, OTP WA penyedia _(ditunda fase awal — lihat §7)_                               |
+| Spam listing/review bot         | Verifikasi listing oleh admin sebelum tayang, review wajib bukti + validasi admin (PRD §7), rate limit, deteksi duplikat koordinat                            |
+| DDoS                            | Cloudflare proxy + rate limit edge (free tier sudah termasuk)                                                                                                 |
+| Kebocoran data                  | Row-Level Security Postgres (user hanya bisa edit miliknya), secrets di environment variables, backup DB harian otomatis (Supabase), least-privilege API keys |
+| Upload file berbahaya           | Validasi tipe & ukuran gambar, re-generate gambar saat proses, nama file acak                                                                                 |
+| Penipuan transfer luar platform | Disclaimer edukasi di UI, badge "Nomor WA terverifikasi", laporan abuse → moderasi admin                                                                      |
+| Admin panel                     | Role-based access control ketat (staff ≠ superadmin), audit log aksi admin                                                                                    |
 
 Aturan praktis: **jangan pernah simpan secret di kode**, semua via env vars; dependency di-update rutin (`npm audit`); error message tidak membocorkan detail internal.
 
@@ -126,22 +128,24 @@ Aturan praktis: **jangan pernah simpan secret di kode**, semua via env vars; dep
 
 ## 6. Estimasi Biaya per Fase Pertumbuhan
 
-| Fase | User/listing | Infrastruktur | Biaya/bln |
-|---|---|---|---|
-| Build & beta | < 1rb user, < 200 listing | Semua free tier + domain | ≈ Rp0 (+domain/tahun) |
-| Launch pilot | 1–10rb user | + email naik paket, mungkin Supabase Pro | Rp0 – Rp400rb |
-| Tumbuh | 10–100rb user | + Redis paid, storage paid, 2nd instance | Rp500rb – 1,5jt |
-| Besar | > 100rb user | LB + multi-instance, read replica, tim | Sesuai revenue boost |
+| Fase         | User/listing              | Infrastruktur                            | Biaya/bln             |
+| ------------ | ------------------------- | ---------------------------------------- | --------------------- |
+| Build & beta | < 1rb user, < 200 listing | Semua free tier + domain                 | ≈ Rp0 (+domain/tahun) |
+| Launch pilot | 1–10rb user               | + email naik paket, mungkin Supabase Pro | Rp0 – Rp400rb         |
+| Tumbuh       | 10–100rb user             | + Redis paid, storage paid, 2nd instance | Rp500rb – 1,5jt       |
+| Besar        | > 100rb user              | LB + multi-instance, read replica, tim   | Sesuai revenue boost  |
 
 Prinsip: **biaya infrastruktur selalu tertinggal di belakang pendapatan boost.**
 
 ---
 
 ## 7. Keputusan Desain (FINAL — sudah diputuskan)
+
 1. **Hosting: Vercel** — gratis terbaik untuk frontend Next.js, cepat, auto-deploy dari GitHub.
 2. **OTP nomor WA penyedia: DITUNDA** — layanan OTP berbiaya per kiriman & butuh waktu integrasi; di traffic awal belum perlu. Pengganti sementara: verifikasi listing manual oleh admin + nomor WA terlihat publik di listing.
 3. **Mekanisme review: Validasi Admin dengan upload bukti** — user yang ingin me-review mengunggah bukti (foto survey/kwitansi/tanda bukti menempati) → admin validasi → review tayang. Kode undangan dari pemilik DITOLAK karena rentan curang (pemilik bisa membuat kode fiktif untuk review palsu bintang 5 → merusak trust). Alternatif lain: fitur review DITUNDA sampai ada penyewa pertama nyata.
 4. **Nama produk final: KosNet**, domain awal `kosnet.vercel.app` (subdomain gratis Vercel) — upgrade ke `.com`/`.id` berbayar setelah platform mulai ramai.
 
 ---
-*Langkah berikutnya (tahap 3): Sistem Desain — design tokens (warna, tipografi, spacing), komponen inti, wireframe halaman utama/pencarian/detail/dashboard.*
+
+_Langkah berikutnya (tahap 3): Sistem Desain — design tokens (warna, tipografi, spacing), komponen inti, wireframe halaman utama/pencarian/detail/dashboard._
