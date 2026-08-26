@@ -6,7 +6,7 @@ export default function HomePage() {
       <h1 className="text-5xl font-bold tracking-tight">KosNet</h1>
       <p className="text-muted-foreground text-lg">Temukan kos dalam hitungan menit, bukan hari.</p>
       <Button size="lg">Mulai</Button>
-      <p className="text-muted-foreground/70 text-sm">— dalam pembangunan —</p>
+      <p className="text-muted-foreground/70 text-sm">— dalam pembangunan abc —</p>
     </main>
   );
 }

@@ -1,0 +1,114 @@
+# Questions
+Bagaimana status review docs/05-Rencana-Implementasi.md?
+Spec disetujui
++ Thought: 1.5s
+Spec disetujui ✓. Melanjutkan ke penyusunan rencana implementasi Fase 0 dengan writing-plans:
+→Skill "writing-plans"
+- Thought: 1m 22s
+I'm using the writing-plans skill to create the implementation plan for Fase 0 (Fondasi Repo).
+
+Plan location: skill default is docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md, but user preferences override. This project uses numbered docs in docs/. The spec lives at docs/05-Rencana-Implementasi.md. For plans, I could use docs/plans/2026-08-26-fase-0-fondasi-repo.md — keeps their docs root clean while following the dated-plan convention. That seems a reasonable blend. I'll note it.
+
+Now, what does Fase 0 include (from spec):
+- git init rapi ✓ (done), docs/ ✓
+- scaffold Next.js + TS strict + Tailwind + shadcn/ui
+- ESLint flat + Prettier + husky + lint-staged
+- scripts: lint, typecheck, test, build, format
+- .env.example, README.md, .gitignore ketat, .gitattributes (eol=lf)
+- CI: ci.yml (lint/typecheck/test/build) + codeql.yml
+- Vitest + RTL setup with a sample test proving the pipeline works
+- Placeholder page? Next.js default page — maybe minimal branded placeholder ("KosNet — dalam pembangunan") to verify build. Keep tiny.
+- Verification: build & CI green; placeholder renders locally.
+
+Task decomposition for Fase 0 (each task = independently testable deliverable, bite-sized steps):
+
+Task 1: Scaffold Next.js + konfigurasi dasar
+- create-next-app with flags: --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --no-git? (create-next-app inits git by default; repo exists already so it should detect and skip... actually it may fail or init nested. Use --disable-git? There's flag --skip-install? Let me think: create-next-app flags: --ts, --tailwind, --eslint, --app, --src-dir, --import-alias, --use-npm, --turbopack? and --disable-git exists in newer versions. I'll write plan with npx create-next-app@latest . --use-npm --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --disable-git — but running in non-empty dir (docs/, README?) fails unless dir only contains allowed files. create-next-app allows certain conflicts? It errors on conflicting files; docs/ folder might be fine? Actually create-next-app checks for conflicting files/subdirs — docs might be allowed? Not sure. Safer: scaffold in temp subdir then move files up? That's fiddly on Windows. Alternative: scaffold into tmp-scaffold/ then move contents (including dotfiles) to root, delete tmp. Plan should spell exact commands.
+
+Hmm wait — npm create next-app has a --yes flag to skip prompts using defaults. With explicit flags + --yes it's non-interactive.
+
+Steps:
+1. npx create-next-app@latest scaffold-tmp --use-npm --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --disable-git --yes
+2. Move all including dotfiles to root: mv scaffold-tmp/* scaffold-tmp/.* . careful with . and .. — better: in bash, shopt -s dotglob && mv scaffold-tmp/* . && rmdir scaffold-tmp. On Windows bash (git bash) dotglob works.
+3. Verify dev build: npm run build.
+4. Commit on branch chore/scaffold-nextjs.
+
+Wait — TDD doesn't apply to scaffolding per se; test cycle = build passes. Fine.
+
+Also TypeScript strict: create-next-app tsconfig already has "strict": true. Verify.
+
+Task 2: Prettier + ESLint flat config + .gitattributes + .gitignore tightening
+- Install prettier, eslint-config-prettier, prettier-plugin-tailwindcss.
+- .prettierrc + .prettierignore.
+- Merge eslint-config-prettier into eslint config (Next 15/16 uses eslint.config.mjs flat).
+- .gitattributes: * text=auto eol=lf, plus binary exceptions.
+- Extend .gitignore (coverage, .env.local etc. — create-next-app provides most).
+- Scripts: format, format:check, typecheck (tsc --noEmit).
+- Steps with run verification + commit chore(tooling): ....
+
+Task 3: Vitest + RTL setup + smoke test
+- Install vitest @vitejs/plugin-react @testing-library/react @testing-library/jest-dom jsdom.
+- vitest.config.ts with path alias @.
+- src/test/setup.ts with jest-dom matchers.
+- Add test script (vitest run), maybe test:watch.
+- Write failing-ish smoke test first (TDD): render a small component e.g. test that placeholder page renders heading "KosNet". Actually page.tsx from CNA is boilerplate; Task 4 replaces it. Order: make Task 3 test target a tiny component we create? Better: Task 3 sets up infra + tests the default page contains link? Fragile. Cleaner: swap order — replace homepage first then test it. But TDD wants test first. Compromise: Task 3 = vitest infra + simple pure-function util test (e.g., cn helper or a formatter) — no UI dependency. Then Task 4 replaces homepage with branded placeholder + component test rendering it (write failing test → implement page → pass). That gives real TDD cycle.
+
+Actually simpler: Task 3 includes creating src/lib/utils.ts with formatRupiah() (needed later everywhere anyway — YAGNI? It'll be used fase 1+; harmless, tested now as pipeline proof). Hmm YAGNI says don't build ahead... but one tiny function as test vehicle is fine and genuinely useful. Alternatively test the shadcn cn util which comes with shadcn install. If Task 3 includes shadcn init, cn exists. Let me restructure:
+
+Task 3: shadcn/ui init + Vitest infra
+- npx shadcn@latest init (needs choices: neutral base color etc.) — non-interactive flags exist: npx shadcn@latest init -y -b neutral? There are flags -d defaults. I'll specify npx shadcn@latest init --defaults --yes hmm exact flags vary by version; plan can say run init with defaults (base color neutral) and verify components.json created. Also add first component button: npx shadcn@latest add button.
+- Install vitest stack, configs, setup file.
+- Smoke test: unit test cn() merges classes (pure, stable): expect(cn("a", false && "b", "c")).toBe("a c").
+- Run test → pass. Commit.
+
+Task 4: Halaman placeholder KosNet + component test (TDD)
+- Failing test: render HomePage → expect heading "KosNet" & tagline text present.
+- Implement minimal page.tsx replacing CNA boilerplate: centered hero, logo text "KosNet", tagline "Temukan kos dalam hitungan menit, bukan hari." + Button (uses shadcn button → proves integration). Indonesian copy.
+- Test passes; build passes. Commit feat(web): halaman placeholder kosnet.
+
+Task 5: Husky + lint-staged
+- npm i -D husky lint-staged; npx husky init; .husky/pre-commit → npx lint-staged; package.json lint-staged config: *.{ts,tsx}: eslint --fix, prettier --write; *.{json,md,css}: prettier --write.
+- Verify: stage a badly formatted file → commit → auto-fixed. Simpler verification: run npx lint-staged directly.
+- Commit chore(tooling): pre-commit hook lint dan format.
+
+Task 6: GitHub Actions CI + CodeQL + README + .env.example
+- .github/workflows/ci.yml (exact YAML from spec §3.1, Node 24, npm cache).
+- .github/workflows/codeql.yml (jobs: analyze, javascript-typescript, push/PR/schedule cron weekly).
+- README.md: badges, deskripsi singkat, setup lokal, struktur, penunjuk docs/.
+- .env.example: placeholder vars commented for future (NEXT_PUBLIC_SUPABASE_URL etc. commented out with catatan fase 3).
+- Verify locally: act not available; verify YAML syntax via yamllint? Simplest: careful review + push triggers CI (user pushes). Local check: node -e yaml parse? Skip — visual + GitHub will validate. But Definition of Done says CI green after push — that happens when user pushes. Plan notes this.
+- Commit chore(ci): workflow quality gate dan codeql.
+
+Then merge chore branches progressively? Workflow: each task = own branch merged --no-ff to main. That's 6 branches for fase 0 — matches user's convention. Or group tasks into fewer branches? Spec says "Setiap fase = 1+ branch, commit granular". So fase 0 could be ONE branch chore/fase-0-fondasi with granular commits! That's simpler and spec-compliant ("1+ branch"). Hmm — but user emphasized "penamaan branch yang berbeda" per change. Spec §2.1: every change = own branch. Tasks are changes. 6 small branches is ceremony-heavy but honors their wish; merging is cheap. Middle ground: logical grouping:
+- chore/scaffold-nextjs (Task 1)
+- chore/tooling-quality (Tasks 2+3+5: prettier/eslint/vitest/husky — all tooling)
+- feat/web-placeholder (Task 4)
+- chore/ci-cd (Task 6)
+
+4 branches, each meaningful, granular commits inside. Good balance. I'll structure plan tasks to map onto these branches explicitly.
+
+Interfaces between tasks: Task 3 produces test script + vitest config consumed by CI (Task 6) and pre-commit (Task 5); Task 4 produces page consumed by nothing yet but verified by test; Task 6 consumes scripts names: lint, typecheck, test, build, format:check.
+
+Global constraints section: Node 24, npm, TS strict, commit conventions ID, branch EN, eol=lf, no secrets committed, Tailwind tokens must follow doc 03 starting fase 1, business logic boundaries (modules/app/components rule) — though fase 0 barely touches.
+
+Now — before writing the plan, quick sanity check on current Next.js/CNA/shadcn CLI flags? My knowledge might be stale (it's Aug 2026). The librarian could verify latest create-next-app & shadcn init flags + Next version. That improves plan accuracy materially (exact commands in plan must work). Cost: one research dispatch. Worth it — plans demand exactness. Let me dispatch @librarian in background while I draft? The plan content depends on those flags... I need results before finalizing commands. Dispatch librarian and wait (blocking) — it's fast (2x speed). Meanwhile I can't parallelize much else since plan hinges on it. Just dispatch and wait.
+
+Actually also useful: confirm CodeQL workflow current recommended syntax (github/codeql-action@v3 still current?), actions/setup-node@v4/v5, cache format. Librarian can bundle all: CNA flags, shadcn CLI flags, latest actions versions, Next 15/16 default eslint flat config filename.
+
+Let me dispatch @librarian with precise questions.
+Saya memakai writing-plans untuk menyusun rencana implementasi Fase 0. Sebelum menulis, saya verifikasi dulu versi & flag CLI terkini (create-next-app, shadcn, GitHub Actions) via @librarian agar semua perintah di rencana akurat:
+✓Librarian Task — Riset versi tooling terkini
+↳ 18 toolcalls · 7m 9s
+ctrl+x down view subagents
+sebentar aku ubah kamu dulu ke mode build jika kamu sudah siap membangun
++ Thought: 11.5s
+Prasyarat	Status
+Spec docs/05-Rencana-Implementasi.md	✅ Disetujui
+Riset tooling terkini (@librarian)	✅ Next.js 16.3.3 · shadcn CLI 4.x (init --defaults --yes) · Vitest 4 + React 19 kompatibel · Actions checkout/setup-node v7, CodeQL v4 · husky 9 + lint-staged 17 — termasuk gotcha penting: Turbopack jadi default di Next 16, next lint deprecated, hook husky wajib LF
+Repo git + remote GitHub + Vercel	✅
+Riwayat bersih	✅ 3 commit docs di main
+Rencana kerja begitu mode build aktif:
+1. Tulis rencana implementasi Fase 0 (fondasi repo) — task per task, TDD, commit granular.
+2. Eksekusi bertahap dalam 4 branch: chore/scaffold-nextjs → chore/tooling-quality → feat/web-placeholder → chore/ci-cd, masing-masing merge --no-ff ke main.
+3. Verifikasi lokal penuh (lint, typecheck, test, build) sebelum setiap commit — CI & CodeQL akan hijau otomatis saat kamu push.
+Silakan pindahkan mode-nya — aku menunggu sinyal dari kamu. 🟢
