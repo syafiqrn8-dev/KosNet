@@ -1,7 +1,9 @@
 # Diagram Teknis — KosNet
+
 **Versi:** 0.1 · **Tanggal:** 2026-08-25 · **Prasyarat:** PRD v0.2, Arsitektur §7 (keputusan final), Sistem Desain disetujui
 
 Dokumen ini berisi:
+
 1. **ERD** — skema database lengkap
 2. **Sequence Diagram API Utama** — alur request backend untuk 4 proses kritis
 3. **Struktur Folder Proyek** — siap diserahkan ke AI agent di VS Code
@@ -199,6 +201,7 @@ erDiagram
 ```
 
 ### Penjelasan Skema
+
 1. **`listings` menyimpan angka denormalisasi** (`view_count`, `avg_rating`, `review_count`) supaya kartu hasil pencarian tidak perlu JOIN hitung — ini bagian dari strategi anti-down (dokumen arsitektur §4). Counter di-update secara async, bukan realtime.
 2. **`rooms` dipisah dari `listings`** karena PRD mensyaratkan status per kamar (Tersedia/Dikunci/Terisi) yang diubah manual pemilik. `room_status_logs` mencatat setiap perubahan — jejak siapa mengubah apa, penting kalau ada sengketa dengan penyewa.
 3. **Review punya dua tabel**: `reviews` (isi) + `review_proofs` (bukti fisik yang divalidasi admin) — sesuai keputusan final anti-review-palsu. Constraint UNIQUE mencegah 1 orang spam banyak review untuk kos sama.
@@ -233,6 +236,7 @@ sequenceDiagram
         A-->>U: 200 OK + hasil
     end
 ```
+
 **Penjelasan Alur:** ini endpoint terpanas platform — dilindungi cache 5 menit sehingga ribuan user serentak hanya menghasilkan 1 query DB per kombinasi filter. Parameter divalidasi ketat sebelum masuk DB (anti SQL injection). Pagination cursor-based agar halaman ke-N tetap cepat.
 
 ## 2.2 Submit Listing Baru (penyedia)
@@ -260,6 +264,7 @@ sequenceDiagram
     end
     Note over D,N: Admin approve → status=tayang<br/>(lihat diagram 2.3)
 ```
+
 **Penjelasan Alur:** validasi ganda (auth + Zod schema) sebelum sentuh DB. Deteksi duplikat otomatis memblokir spam listing kembar SEBELUM admin repot. Foto tidak lewat server app — browser upload langsung ke R2 pakai presigned URL, hemat resource server.
 
 ## 2.3 Verifikasi Listing oleh Admin
@@ -281,6 +286,7 @@ sequenceDiagram
     A->>N: Email penyedia: "Kos Anda tayang ✓"
     A-->>Ad: 200 OK
 ```
+
 **Penjelasan Alur:** setiap keputusan admin WAJIB menulis `audit_logs` dalam transaksi yang sama dengan perubahan status — tidak bisa ada approve tanpa jejak. Cache pencarian langsung di-invalidasi agar listing baru muncul segera (tidak menunggu TTL 5 menit).
 
 ## 2.4 Ajukan Review + Validasi Admin
@@ -307,6 +313,7 @@ sequenceDiagram
     A->>D: INSERT audit_logs
     A->>N: Email user hasil validasi
 ```
+
 **Penjelasan Alur:** review MASUK sebagai draft `menunggu_validasi` — tidak pernah tampil publik sebelum buktinya lolos admin. Rating rata-rata listing dihitung ulang async (background) supaya request user tetap ringan. Penolakan wajib beralasan → dikirim ke user agar bisa ajukan ulang.
 
 ## 2.5 Klik Tombol WhatsApp (tracking)
@@ -324,6 +331,7 @@ sequenceDiagram
     U->>U: Browser membuka WhatsApp<br/>pesan template: nama kos + link
     Note over Q: Job menaikkan wa_click_count<br/>secara batch (anti race-condition)
 ```
+
 **Penjelasan Alur:** tracking klik WA sengaja async — pengguna tidak boleh menunggu penulisan statistik; mereka langsung dilempar ke WhatsApp. Counter naik via batch update agar tidak terjadi race condition saat ratusan klik bersamaan.
 
 ---
@@ -388,7 +396,8 @@ kosnet/
 ```
 
 ### Penjelasan Struktur
-- **Aturan emas untuk AI agent di VS Code:** *business logic HANYA di `src/modules/*`, routing HANYA di `src/app/*`, komponen HANYA di `src/components/*`.* Batas modul jelas = mudah di-scale nanti (arsitektur §1).
+
+- **Aturan emas untuk AI agent di VS Code:** _business logic HANYA di `src/modules/*`, routing HANYA di `src/app/*`, komponen HANYA di `src/components/*`._ Batas modul jelas = mudah di-scale nanti (arsitektur §1).
 - **`docs/` ikut dalam repo** — AI agent bisa membaca PRD/desain sebagai konteks saat build fitur.
 - **Migrasi DB selalu lewat file `supabase/migrations/`**, jangan ubah skema manual di dashboard — agar reproducible.
 
@@ -396,17 +405,19 @@ kosnet/
 
 # BAGIAN 4 — KONTRAK DATA PENTING (ENUM)
 
-| Enum | Nilai | Catatan |
-|---|---|---|
-| `user_role` | `pencari` · `penyedia` · `admin` · `superadmin` | 1 user bisa pencari+penyedia; field role menyimpan role tertinggi |
-| `gender_type` | `pria` · `wanita` · `campur` | Filter kategori kos |
-| `listing_status` | `draft` → `menunggu_verifikasi` → `revisi`/`tayang`/`ditolak` → `nonaktif`/`suspend` | Urutan = state machine verifikasi |
-| `room_status` | `tersedia` · `dikunci` · `terisi` | Diubah manual oleh pemilik |
-| `review_status` | `menunggu_validasi` · `tayang` · `ditolak` | Wajib ≥1 proof sebelum bisa tayang |
-| `boost_status` | `menunggu_bukti` → `menunggu_validasi` → `aktif` → `selesai`/`ditolak` | Aktivasi manual admin |
+| Enum             | Nilai                                                                                | Catatan                                                           |
+| ---------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `user_role`      | `pencari` · `penyedia` · `admin` · `superadmin`                                      | 1 user bisa pencari+penyedia; field role menyimpan role tertinggi |
+| `gender_type`    | `pria` · `wanita` · `campur`                                                         | Filter kategori kos                                               |
+| `listing_status` | `draft` → `menunggu_verifikasi` → `revisi`/`tayang`/`ditolak` → `nonaktif`/`suspend` | Urutan = state machine verifikasi                                 |
+| `room_status`    | `tersedia` · `dikunci` · `terisi`                                                    | Diubah manual oleh pemilik                                        |
+| `review_status`  | `menunggu_validasi` · `tayang` · `ditolak`                                           | Wajib ≥1 proof sebelum bisa tayang                                |
+| `boost_status`   | `menunggu_bukti` → `menunggu_validasi` → `aktif` → `selesai`/`ditolak`               | Aktivasi manual admin                                             |
 
 ### Penjelasan Kontrak
+
 Enum ini adalah **sumber kebenaran tunggal** — didefinisikan sekali di `src/types/` dan dipakai di schema validasi, database constraint, DAN badge warna UI (Sistem Desain §1.1: biru/kuning/merah). Konsistensi tiga lapis ini mencegah bug klasik "status beda nama antar layer".
 
 ---
-*Dokumen perencanaan selesai (tahap 1–4). Langkah build: serahkan folder `kos-platform/` ke AI agent di VS Code dengan instruksi mulai dari struktur folder Bagian 3.*
+
+_Dokumen perencanaan selesai (tahap 1–4). Langkah build: serahkan folder `kos-platform/` ke AI agent di VS Code dengan instruksi mulai dari struktur folder Bagian 3._
