@@ -47,7 +47,13 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* KosNet design tokens — Dokumen 03 §1 */
+  /* KosNet design tokens — Dokumen 03 §1
+     Meng-override default shadcn agar sesuai sistem desain KosNet:
+     - secondary KosNet = #0F172A (teks judul gelap)
+     - muted KosNet    = #64748B (teks sekunder)
+     - background      = #F8FAFC (latar halaman) */
+  --color-secondary: #0f172a;
+  --color-muted: #64748b;
   --color-primary-dark: #15803d;
   --color-primary-light: #dcfce7;
   --color-wa: #25d366;
@@ -57,9 +63,7 @@
   --color-status-tersedia: #3b82f6;
   --color-status-dikunci: #f59e0b;
   --color-status-terisi: #dc2626;
-  --color-secondary: var(--secondary);
-  --color-muted: var(--muted);
-  --color-danger: var(--destructive);
+  --color-danger: #dc2626;
 }
 
 :root {
@@ -71,9 +75,9 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: #16a34a;
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --secondary: #0f172a;
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: #64748b;
   --muted-foreground: #64748b;
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
