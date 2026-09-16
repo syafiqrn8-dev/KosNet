@@ -71,9 +71,22 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* Skeleton Loader Utilities */
+.bg-card {
+  @apply bg-white dark:bg-gray-800;
+}
+
+.ring-1 {
+  @apply ring-1;
+}
+
+.ring-[--border] {
+  @apply ring-[var(--border)];
 }
