@@ -1,22 +1,24 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 
 export interface SkeletonLoaderProps {
   className?: string;
-  variant?: "card" | "text" | "avatar";
+  variant?: "text" | "card" | "avatar";
 }
 
 export function SkeletonLoader({ className, variant = "text" }: SkeletonLoaderProps) {
   if (variant === "card") {
     return (
-      <div className="bg-card animate-pulse rounded-[--radius-lg] ring-1 ring-[--border]">
-        <div className="bg-muted/30 aspect-[4/3] rounded-t-[--radius-lg]" />
-        <div className="space-y-2.5 p-3">
-          <div className="bg-muted/30 h-4 w-3/4 rounded" />
-          <div className="bg-muted/20 h-3 w-1/2 rounded" />
-          <div className="bg-muted/30 h-4 w-1/3 rounded" />
-          <div className="flex gap-1.5">
-            <div className="bg-muted/20 h-5 w-10 rounded-full" />
-            <div className="bg-muted/20 h-5 w-10 rounded-full" />
+      <div className={cn("h-48 animate-pulse rounded-lg bg-gray-100 sm:h-64", className)}>
+        <div className="h-1/4 animate-pulse rounded-t-lg bg-gray-100" />
+        <div className="p-4">
+          <div className="h-4 w-3/4 animate-pulse rounded bg-gray-100" />
+          <div className="h-2 w-1/2 animate-pulse rounded bg-gray-100" />
+          <div className="h-4 w-1/3 animate-pulse rounded bg-gray-100" />
+          <div className="flex gap-2">
+            <div className="h-5 w-10 animate-pulse rounded bg-gray-100" />
+            <div className="h-5 w-10 animate-pulse rounded bg-gray-100" />
           </div>
         </div>
       </div>
@@ -25,17 +27,16 @@ export function SkeletonLoader({ className, variant = "text" }: SkeletonLoaderPr
 
   if (variant === "avatar") {
     return (
-      <div className={cn("flex items-center gap-3", className)}>
-        <div className="bg-muted/30 size-10 animate-pulse rounded-full" />
-        <div className="flex-1 space-y-1.5">
-          <div className="bg-muted/30 h-3 w-1/3 rounded" />
-          <div className="bg-muted/20 h-3 w-1/2 rounded" />
+      <div className={cn("flex items-center gap-2", className)}>
+        <div className="size-8 animate-pulse rounded-full bg-gray-100" />
+        <div className="flex-1 space-y-1">
+          <div className="h-2 w-2/3 animate-pulse rounded bg-gray-100" />
+          <div className="h-2 w-1/2 animate-pulse rounded bg-gray-100" />
         </div>
       </div>
     );
   }
 
-  return (
-    <div className={cn("bg-muted/30 animate-pulse rounded", className)} style={{ height: "1em" }} />
-  );
+  // default variant — skeleton teks
+  return <div className={cn("h-6 animate-pulse rounded bg-gray-100", className)} />;
 }
