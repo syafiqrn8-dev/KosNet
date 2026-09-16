@@ -11,7 +11,24 @@ export interface SkeletonLoaderProps {
 // Animasi ini memiliki durasi 1.5s dengan kilauan yang lebih tajam
 const pulseFast = "pulseFast 1.5s ease-in-out infinite";
 
+const pulseFastKeyframes = `
+  @keyframes pulseFast {
+    0%, 80%, 100% {
+      opacity: 1;
+    }
+    40% {
+      opacity: 0.6;
+      transform: scale(0.95);
+    }
+  }
+`;
+
 export function SkeletonLoader({ className, variant = "default" }: SkeletonLoaderProps) {
+  // Inject keyframes custom hanya sekali per komponen
+  if (variant !== "default") {
+    // We'll just use the inline style approach
+  }
+
   if (variant === "card") {
     return (
       <div

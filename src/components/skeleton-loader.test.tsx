@@ -3,10 +3,10 @@ import { render } from "@testing-library/react";
 import { SkeletonLoader } from "./skeleton-loader";
 
 describe("SkeletonLoader", () => {
-  it("merender varian default (text)", () => {
+  it("merender varian default", () => {
     const { container } = render(<SkeletonLoader />);
     const element = container.firstChild as HTMLElement;
-    expect(element.className).toContain("animate-pulse");
+    expect(element.className).toContain("animate-[pulseFast]");
   });
 
   it("merender varian card", () => {
@@ -20,7 +20,7 @@ describe("SkeletonLoader", () => {
   });
 
   it("menerima className tambahan", () => {
-    const { container } = render(<SkeletonLoader className="custom-class" variant="text" />);
+    const { container } = render(<SkeletonLoader className="custom-class" variant="default" />);
     expect((container.firstChild as HTMLElement).className).toContain("custom-class");
   });
 });
