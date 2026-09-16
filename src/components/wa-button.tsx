@@ -17,7 +17,7 @@ export function WAButton({ phoneNumber, message, className, disabled = false }: 
   }`;
 
   const classes = cn(
-    "inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-[--color-wa] text-sm font-medium text-white whitespace-nowrap transition-all hover:bg-[--color-wa]/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[--color-wa]/50 disabled:pointer-events-none disabled:opacity-50 h-9 px-4",
+    "inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-[#25d366] text-sm font-medium text-white whitespace-nowrap transition-all hover:bg-[#25d366]/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#25d366]/50 disabled:pointer-events-none disabled:opacity-50 h-9 px-4",
     className,
   );
 
